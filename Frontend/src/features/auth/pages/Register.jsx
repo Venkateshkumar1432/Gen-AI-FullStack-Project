@@ -13,8 +13,10 @@ const Register = () => {
     
     const handleSubmit = async (e) => {
         e.preventDefault()
-        await handleRegister({username,email,password})
-        navigate("/")
+        const user = await handleRegister({ username, email, password })
+        if (user) {
+            navigate("/")
+        }
     }
 
     if(loading){
@@ -24,7 +26,11 @@ const Register = () => {
     return (
         <main>
             <div className="form-container">
-                <h1>Register</h1>
+                <div className="form-heading">
+                    <span className="brand-pill">GenAI</span>
+                    <h1>Create account</h1>
+                    <p>Register to start asking questions about your documents and save every chat session.</p>
+                </div>
 
                 <form onSubmit={handleSubmit}>
 
@@ -51,7 +57,7 @@ const Register = () => {
 
                 </form>
 
-                <p>Already have an account? <Link to={"/login"} >Login</Link> </p>
+                <p className="form-footer">Already have an account? <Link to={"/login"} >Login</Link></p>
             </div>
         </main>
     )

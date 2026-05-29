@@ -1,12 +1,12 @@
 // ── Shared Variables (mirrors home.scss theme) ────────────────────────────────
-$bg-page: #0d1117;
-$bg-card: #161b22;
-$bg-panel: #1c2230;
-$bg-input: #1e2535;
-$border-color: #2a3348;
-$text-primary: #e6edf3;
-$text-muted: #7d8590;
-$accent: #ff2d78;
+$bg-page: var(--bg);
+$bg-card: var(--surface);
+$bg-panel: var(--surface);
+$bg-input: var(--input-bg);
+$border-color: var(--surface-border);
+$text-primary: var(--text-primary);
+$text-muted: var(--text-muted);
+$accent: var(--accent);
 $font-stack: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
 // severity palette
@@ -172,7 +172,7 @@ $severity-low: #3fb950;
     transition: border-color 0.2s;
 
     &:hover {
-        border-color: lighten($border-color, 8%);
+        border-color: rgba(var(--accent-rgb), 0.25);
     }
 
     &__header {
@@ -234,7 +234,7 @@ $severity-low: #3fb950;
         p {
             margin: 0;
             font-size: 0.835rem;
-            color: lighten($text-muted, 15%);
+            color: var(--text-muted);
             line-height: 1.6;
         }
     }
@@ -259,6 +259,51 @@ $severity-low: #3fb950;
             background-color: rgba(#3fb950, 0.1);
             border: 1px solid rgba(#3fb950, 0.2);
         }
+    }
+}
+
+@media (max-width: 1120px) {
+    .interview-page {
+        padding: 1rem;
+    }
+
+    .interview-layout {
+        flex-direction: column;
+        max-width: 100%;
+    }
+
+    .interview-nav,
+    .interview-sidebar {
+        width: 100%;
+    }
+
+    .interview-divider {
+        display: none;
+    }
+
+    .interview-content {
+        padding: 1.25rem 1rem 1.5rem;
+        max-height: none;
+    }
+}
+
+@media (max-width: 720px) {
+    .interview-nav {
+        padding: 1rem;
+    }
+
+    .interview-nav__item {
+        justify-content: flex-start;
+        padding: 0.75rem 0.85rem;
+    }
+
+    .content-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .match-score {
+        width: 100%;
     }
 }
 
@@ -338,7 +383,7 @@ $severity-low: #3fb950;
             align-items: flex-start;
             gap: 0.5rem;
             font-size: 0.845rem;
-            color: lighten($text-muted, 12%);
+            color: var(--text-muted);
             line-height: 1.5;
         }
     }

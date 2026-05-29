@@ -13,8 +13,10 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        await handleLogin({email,password})
-        navigate('/')
+        const user = await handleLogin({ email, password })
+        if (user) {
+            navigate('/')
+        }
     }
 
     if(loading){
@@ -25,7 +27,11 @@ const Login = () => {
     return (
         <main>
             <div className="form-container">
-                <h1>Login</h1>
+                <div className="form-heading">
+                    <span className="brand-pill">GenAI</span>
+                    <h1>Welcome Back</h1>
+                    <p>Login to continue exploring your PDF chat assistant, saved sessions, and document insights.</p>
+                </div>
                 <form onSubmit={handleSubmit}>
                     <div className="input-group">
                         <label htmlFor="email">Email</label>
@@ -41,7 +47,7 @@ const Login = () => {
                     </div>
                     <button className='button primary-button' >Login</button>
                 </form>
-                <p>Don't have an account? <Link to={"/register"} >Register</Link> </p>
+                <p className="form-footer">Don't have an account? <Link to={"/register"} >Register</Link></p>
             </div>
         </main>
     )

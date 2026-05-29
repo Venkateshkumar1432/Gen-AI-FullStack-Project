@@ -4,7 +4,8 @@ import Register from "./features/auth/pages/Register";
 import Protected from "./features/auth/components/Protected";
 import Home from "./features/interview/pages/Home";
 import Interview from "./features/interview/pages/Interview";
-
+import Dashboard from "./features/interview/pages/Dashboard";
+import DocumentChat from "./features/interview/pages/DocumentChat";
 
 export const router = createBrowserRouter([
     {
@@ -17,7 +18,15 @@ export const router = createBrowserRouter([
     },
     {
         path: "/",
+        element: <Protected><Dashboard /></Protected>
+    },
+    {
+        path: "/interview-prep",
         element: <Protected><Home /></Protected>
+    },
+    {
+        path: "/document-chat",
+        element: <Protected><DocumentChat /></Protected>
     },
     {
         path:"/interview/:interviewId",
