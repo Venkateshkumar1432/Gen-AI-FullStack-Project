@@ -7,13 +7,22 @@ const featureCards = [
         title: "Interview Preparation",
         description: "Build a tailored interview strategy based on your resume, experience, and job description.",
         buttonText: "Start Preparing",
-        path: "/interview-prep"
+        path: "/interview-prep",
+        icon: "🎯"
     },
     {
         title: "Document Chat",
         description: "Upload a PDF and ask questions to get instant answers from the document content.",
         buttonText: "Open Document Chat",
-        path: "/document-chat"
+        path: "/document-chat",
+        icon: "📄"
+    },
+    {
+        title: "YouTube Video Chat",
+        description: "Process a YouTube video and ask natural-language questions using its transcript.",
+        buttonText: "Open YouTube Chat",
+        path: "/youtube-chat",
+        icon: "🎬"
     }
 ]
 
@@ -31,7 +40,7 @@ const Dashboard = () => {
                 <div>
                     <p className="dashboard-welcome">Welcome back, <strong>{user?.username || user?.email || "User"}</strong></p>
                     <h1>Choose your next step</h1>
-                    <p>Pick a feature to continue: build your interview prep plan or ask questions from a PDF document.</p>
+                    <p>Pick a feature to continue: build your interview prep plan, ask questions from a PDF, or chat with a YouTube video transcript.</p>
                 </div>
                 <button onClick={handleLogout} className="button secondary-button">Logout</button>
             </header>
@@ -39,7 +48,7 @@ const Dashboard = () => {
             <div className="dashboard-grid">
                 {featureCards.map((card) => (
                     <article key={card.title} className="feature-card">
-                        <div className="feature-card__icon">{card.title === "Interview Preparation" ? "🎯" : "📄"}</div>
+                        <div className="feature-card__icon">{card.icon}</div>
                         <h2>{card.title}</h2>
                         <p>{card.description}</p>
                         <button onClick={() => onFeatureClick(card.path)} className="button primary-button">{card.buttonText}</button>

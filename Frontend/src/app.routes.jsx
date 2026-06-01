@@ -6,6 +6,7 @@ import Home from "./features/interview/pages/Home";
 import Interview from "./features/interview/pages/Interview";
 import Dashboard from "./features/interview/pages/Dashboard";
 import DocumentChat from "./features/interview/pages/DocumentChat";
+import YouTubeChat from "./features/interview/pages/YouTubeChat";
 
 export const router = createBrowserRouter([
     {
@@ -27,6 +28,10 @@ export const router = createBrowserRouter([
     {
         path: "/document-chat",
         element: <Protected><DocumentChat /></Protected>
+    },
+    {
+        path: "/youtube-chat",
+        element: <Protected><YouTubeChat /></Protected>
     },
     {
         path:"/interview/:interviewId",

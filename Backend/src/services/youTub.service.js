@@ -1,51 +1,127 @@
-const { GoogleGenAI } = require("@google/genai")
+// const { GoogleGenAI } = require("@google/genai")
 const mongoose = require("mongoose")
 const youTubeModel = require("../models/VideoDocument.model")
 const VideoChunk = require("../models/VideoChunk.model")
 const VideoChat = require("../models/VideoChat.model")
 const { URL } = require("url")
 const { createEmbedding } = require("./embedding.service")
+const { chunkText } = require("../utils/chunkText")
+const { Innertube } = require("youtubei.js");
+const { YoutubeTranscript } = require("youtube-transcript");
 
-const ai = new GoogleGenAI({
-    apiKey: process.env.GOOGLE_GENAI_API_KEY
-})
 
 const VIDEO_VECTOR_INDEX_NAME = process.env.VIDEO_VECTOR_INDEX_NAME || "video_chunks_vector_idx"
 const TOP_K = parseInt(process.env.RAG_TOP_K || "5", 10)
 const SCORE_THRESHOLD = parseFloat(process.env.VECTOR_SIMILARITY_THRESHOLD || "0.1")
+const CHUNK_SIZE = parseInt(process.env.PDF_CHUNK_SIZE || "900", 10)
+const CHUNK_OVERLAP = parseInt(process.env.PDF_CHUNK_OVERLAP || "180", 10)
 
-function extractVideoIdFromUrl(youtubeUrl) {
-    try {
-        const parsed = new URL(youtubeUrl)
-        if (parsed.searchParams && parsed.searchParams.get('v')) return parsed.searchParams.get('v')
-        if (parsed.hostname === 'youtu.be') return parsed.pathname.split('/').filter(Boolean)[0]
-        const parts = parsed.pathname.split('/').filter(Boolean)
-        return parts.length ? parts[parts.length - 1] : null
-    } catch (err) {
-        return null
+const extractVideoId = (url) => {
+    const regex =
+        /(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([^&\n?#]+)/;
+
+    const match = url.match(regex);
+
+    return match ? match[1] : null;
+};
+
+async function createVideoDocument({ userId, youtubeUrl, videoId, title, status }) {
+    return youTubeModel.create({
+        userId,
+        youtubeUrl,
+        videoId,
+        title,
+        status
+    })
+}  
+
+async function savePdfChunks(documentId, chunks) {
+    const chunkDocuments = []
+
+    for (let index = 0; index < chunks.length; index += 1) {
+        const content = chunks[index]
+        const embedding = await createEmbedding(content)
+
+        chunkDocuments.push({
+            videoId: documentId,
+            chunkIndex: index,
+            content,
+            embedding,
+        })
     }
+
+    return VideoChunk.insertMany(chunkDocuments)
 }
 
 async function processYouTubeUpload({ userId, youtubeUrl }) {
     if (!youtubeUrl || !userId) throw new Error('youtubeUrl and userId are required')
 
-    const videoId = extractVideoIdFromUrl(youtubeUrl) || ''
+    const videoId = extractVideoId(youtubeUrl)
 
-    const doc = new youTubeModel({
+    if (!videoId) {
+        throw new Error("Invalid YouTube URL")
+    }
+
+    /**
+    * Fetch Video Metadata
+    */
+    const youtube = await Innertube.create();
+
+    const info = await youtube.getInfo(videoId);
+
+    const basicInfo = info.basic_info;
+    /**
+        * Fetch Transcript
+    */
+    let transcriptText = "";
+
+    try {
+        const transcript = await YoutubeTranscript.fetchTranscript(videoId);
+
+        transcriptText = transcript
+            .map((item) => item.text)
+            .join(" ");
+    } catch (transcriptError) {
+            console.log("Transcript not available");
+        }
+    // const doc = new youTubeModel({
+    //     userId,
+    //     youtubeUrl,
+    //     videoId,
+    //     status: "PROCESSING",
+    //     title: basicInfo.title,
+    // })
+    const Videodocument = await createVideoDocument({
         userId,
         youtubeUrl,
         videoId,
-        status: "PROCESSING",
-        totalChunks: 0,
-        title: ""
+        title: basicInfo.title,
+        status: "PROCESSING"
     })
-
-    const saved = await doc.save()
-    return saved
+    console.log("Created YouTube document, now saving...", Videodocument)
+    try{    
+            const chunks = chunkText(transcriptText, CHUNK_SIZE, CHUNK_OVERLAP)
+            console.log('The chunks are:-', chunks)
+            const insertedChunks = await savePdfChunks(Videodocument._id, chunks)
+            Videodocument.totalChunks = insertedChunks.length
+            Videodocument.status = "COMPLETED"
+            await Videodocument.save()
+            return Videodocument
+    }catch(err){
+        Videodocument.status = "FAILED"
+        await Videodocument.save()
+        throw error
+    }
 }
 
 async function getVideoDocumentByVideoId(videoId) {
     if (!videoId) throw new Error('videoId is required')
+
+    if (mongoose.isValidObjectId(videoId)) {
+        const documentById = await youTubeModel.findById(videoId)
+        if (documentById) return documentById
+    }
+
     return youTubeModel.findOne({ videoId })
 }
 
@@ -156,30 +232,5 @@ module.exports = {
     getChatHistory,
     getChatHistoryByUser,
     retrieveRelevantVideoChunks,
-    createYouTubeChat,
-    generateSummaryFromYouTubeVideo: async function ({ youtubeUrl, userQuestions, userId }) {
-        if (!youtubeUrl) throw new Error('youtubeUrl is required')
-
-        const videoId = extractVideoIdFromUrl(youtubeUrl) || ''
-
-        const prompt = `You are an assistant that summarizes YouTube video Were i will provide youtube link and questions.\nURL: ${youtubeUrl}\n Questions: ${Array.isArray(userQuestions) ? userQuestions.join('\n') : userQuestions}\n Now based on that generate a summary of the video that answers the provided questions. Focus on providing clear and informative answers based on the content of the video.`
-
-        const response = await ai.models.generateContent({
-            model: "gemini-3.5-flash",
-            contents: prompt,
-            generation_config: {}
-        })
-
-        const aiText = response && (response.text || (response[0] && response[0].text)) ? (response.text || response[0].text) : JSON.stringify(response)
-
-        const doc = new youTubeModel({
-            youtubeUrl,
-            videoId,
-            aiSummary: aiText,
-            userId
-        })
-
-        const saved = await doc.save()
-        return saved
-    }
+    createYouTubeChat
 }
