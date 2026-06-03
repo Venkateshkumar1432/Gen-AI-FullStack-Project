@@ -1,8 +1,8 @@
 import axios from "axios"
-
+const API_BASE_URL = import.meta.env.VITE_BACKEND_API
 
 const api = axios.create({
-    baseURL: "http://localhost:3000",
+    baseURL: API_BASE_URL,
     withCredentials: true
 })
 
@@ -36,7 +36,6 @@ export async function login({ email, password }) {
     } catch (err) {
         console.log(err)
     }
-
 }
 
 export async function logout() {

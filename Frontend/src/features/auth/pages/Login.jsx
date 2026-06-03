@@ -28,7 +28,7 @@ const Login = () => {
         <main>
             <div className="form-container">
                 <div className="form-heading">
-                    <span className="brand-pill">GenAI</span>
+                    <span className="brand-pill">GenAI Full Stack Project</span>
                     <h1>Welcome Back</h1>
                     <p>Login to continue exploring your PDF chat assistant, saved sessions, and document insights.</p>
                 </div>
