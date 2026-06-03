@@ -9,7 +9,6 @@ const DocumentChat = () => {
     const [question, setQuestion] = useState("")
     const [status, setStatus] = useState("")
     const [lastChat, setLastChat] = useState(null)
-
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -80,14 +79,14 @@ const DocumentChat = () => {
         <div className="document-chat-page">
             <header className="document-chat-header">
                 <div className="header-row">
-                    <button className="link-button" onClick={() => navigate(-1)}>← Back</button>
-                    <span className="page-tag">PDF Intelligence</span>
+                    <button className="link-button" onClick={() => navigate(-1)}>Back</button>
+                    <span className="page-tag">Evidence Desk</span>
                 </div>
 
                 <div className="page-copy">
-                    <p className="eyebrow">Document Chat</p>
-                    <h1>Ask your PDF and keep every answer in one organized place.</h1>
-                    <p>Upload a PDF, submit questions in natural language, and browse the complete conversation history for the document.</p>
+                    <p className="eyebrow">Document Desk</p>
+                    <h1>Load a PDF, question the evidence, keep the trail.</h1>
+                    <p>Use this desk to upload one document, ask focused questions, review source hints, and build a timeline of useful answers.</p>
                 </div>
 
                 <div className="page-summary">
@@ -111,7 +110,7 @@ const DocumentChat = () => {
                     <section className="card upload-card">
                         <div className="card-head">
                             <div>
-                                <p className="eyebrow">Upload</p>
+                                <p className="eyebrow">Input</p>
                                 <h2>Choose PDF</h2>
                             </div>
                             <span className="status-chip">Required</span>
@@ -124,37 +123,23 @@ const DocumentChat = () => {
                             <span className="upload-meta">{selectedFile ? selectedFile.name : "No file selected"}</span>
                             <button className="button primary-button" onClick={handleUpload} disabled={loading}>Upload PDF</button>
                         </div>
-
-                        <p className="upload-hint">Only PDF files are allowed. Wait until upload finishes before asking questions.</p>
                     </section>
 
                     <section className="card detail-card">
                         <div className="card-head">
                             <div>
-                                <p className="eyebrow">Document details</p>
-                                <h2>Active file</h2>
+                                <p className="eyebrow">Active file</p>
+                                <h2>Document profile</h2>
                             </div>
                             <span className="detail-status">{documentInfo ? "Loaded" : "Idle"}</span>
                         </div>
 
                         {documentInfo ? (
                             <div className="detail-grid">
-                                <div className="detail-row">
-                                    <span>Document ID</span>
-                                    <strong>{documentInfo.id}</strong>
-                                </div>
-                                <div className="detail-row">
-                                    <span>Pages</span>
-                                    <strong>{documentInfo.totalPages || "—"}</strong>
-                                </div>
-                                <div className="detail-row">
-                                    <span>Chats</span>
-                                    <strong>{chatHistory.length}</strong>
-                                </div>
-                                <div className="detail-row">
-                                    <span>Created</span>
-                                    <strong>{documentInfo.createdAt ? new Date(documentInfo.createdAt).toLocaleDateString() : "—"}</strong>
-                                </div>
+                                <div className="detail-row"><span>Document ID</span><strong>{documentInfo.id}</strong></div>
+                                <div className="detail-row"><span>Pages</span><strong>{documentInfo.totalPages || "-"}</strong></div>
+                                <div className="detail-row"><span>Chats</span><strong>{chatHistory.length}</strong></div>
+                                <div className="detail-row"><span>Created</span><strong>{documentInfo.createdAt ? new Date(documentInfo.createdAt).toLocaleDateString() : "-"}</strong></div>
                             </div>
                         ) : (
                             <p className="empty-state">Upload a PDF to view details and start asking questions.</p>
@@ -164,13 +149,13 @@ const DocumentChat = () => {
                     <section className="card hint-card">
                         <div className="card-head">
                             <div>
-                                <p className="eyebrow">Quick tips</p>
-                                <h2>Ask smarter questions</h2>
+                                <p className="eyebrow">Question craft</p>
+                                <h2>Ask with intent</h2>
                             </div>
                         </div>
                         <ul className="hint-list">
                             <li>Ask for summaries, action items, or page-specific details.</li>
-                            <li>Use clear language like “What are the main points on page 10?”</li>
+                            <li>Use clear language like "What are the main points on page 10?"</li>
                             <li>Review the timeline below to repeat or refine earlier questions.</li>
                         </ul>
                     </section>
@@ -181,7 +166,7 @@ const DocumentChat = () => {
                         <div className="card-head">
                             <div>
                                 <p className="eyebrow">Question</p>
-                                <h2>Ask your document</h2>
+                                <h2>Ask the document</h2>
                             </div>
                             <span className="status-chip">{documentInfo ? "Ready" : "Waiting"}</span>
                         </div>
@@ -199,7 +184,7 @@ const DocumentChat = () => {
                             <button className="button primary-button" onClick={handleAsk} disabled={loading || !documentInfo}>
                                 Ask document
                             </button>
-                            <p className="field-help">Need inspiration? Ask about summaries, page details, or tasks.</p>
+                            <p className="field-help">Ask about summaries, page details, decisions, or tasks.</p>
                         </div>
                     </section>
 
@@ -209,22 +194,14 @@ const DocumentChat = () => {
                                 <p className="eyebrow">Latest answer</p>
                                 <h2>Response preview</h2>
                             </div>
-                            <span className="meta-text">
-                                {lastChat ? new Date(lastChat.timestamp).toLocaleString() : "Waiting for your first question"}
-                            </span>
+                            <span className="meta-text">{lastChat ? new Date(lastChat.timestamp).toLocaleString() : "Waiting for your first question"}</span>
                         </div>
 
                         <div className="answer-content">
                             {lastChat ? (
                                 <>
-                                    <div className="answer-block">
-                                        <p className="card-label">Question</p>
-                                        <p>{lastChat.question}</p>
-                                    </div>
-                                    <div className="answer-block">
-                                        <p className="card-label">Answer</p>
-                                        <p>{lastChat.answer}</p>
-                                    </div>
+                                    <div className="answer-block"><p className="card-label">Question</p><p>{lastChat.question}</p></div>
+                                    <div className="answer-block"><p className="card-label">Answer</p><p>{lastChat.answer}</p></div>
                                 </>
                             ) : (
                                 <p className="empty-state">You will see the latest question and answer here after submitting a request.</p>
@@ -248,31 +225,22 @@ const DocumentChat = () => {
             <section className="history-section">
                 <div className="history-header">
                     <div>
-                        <p className="eyebrow">History</p>
-                        <h2>Conversation timeline</h2>
+                        <p className="eyebrow">Timeline</p>
+                        <h2>Conversation trail</h2>
                     </div>
-                    <p>All document questions and answers are stored here. Use the timeline to revisit past chats and current insights.</p>
+                    <p>Every answer stays attached to this document so you can revisit and refine the research path.</p>
                 </div>
 
                 <div className="history-grid">
-                    {chatHistory.length === 0 && (
-                        <div className="history-empty">No history available yet. Ask a question to start your timeline.</div>
-                    )}
-
+                    {chatHistory.length === 0 && <div className="history-empty">No history available yet. Ask a question to start your timeline.</div>}
                     {chatHistory.map((item) => (
                         <article key={item._id || item.createdAt} className="history-entry">
                             <div className="history-entry-top">
                                 <span className="history-badge">Q&A</span>
                                 <time>{new Date(item.createdAt).toLocaleString()}</time>
                             </div>
-                            <div className="history-entry-block">
-                                <p className="history-entry-label">Question</p>
-                                <p>{item.question}</p>
-                            </div>
-                            <div className="history-entry-block">
-                                <p className="history-entry-label">Answer</p>
-                                <p>{item.answer}</p>
-                            </div>
+                            <div className="history-entry-block"><p className="history-entry-label">Question</p><p>{item.question}</p></div>
+                            <div className="history-entry-block"><p className="history-entry-label">Answer</p><p>{item.answer}</p></div>
                         </article>
                     ))}
                 </div>

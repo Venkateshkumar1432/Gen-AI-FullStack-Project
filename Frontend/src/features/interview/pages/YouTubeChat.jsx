@@ -9,7 +9,6 @@ const YouTubeChat = () => {
     const [question, setQuestion] = useState("")
     const [status, setStatus] = useState("")
     const [lastChat, setLastChat] = useState(null)
-
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -72,17 +71,17 @@ const YouTubeChat = () => {
     const isAskDisabled = loading || !videoInfo || videoInfo.status !== "COMPLETED"
 
     return (
-        <div className="document-chat-page">
+        <div className="document-chat-page document-chat-page--video">
             <header className="document-chat-header">
                 <div className="header-row">
-                    <button className="link-button" onClick={() => navigate(-1)}>← Back</button>
-                    <span className="page-tag">YouTube Intelligence</span>
+                    <button className="link-button" onClick={() => navigate(-1)}>Back</button>
+                    <span className="page-tag">Transcript Studio</span>
                 </div>
 
                 <div className="page-copy">
-                    <p className="eyebrow">YouTube Chat</p>
-                    <h1>Ask questions about any processed YouTube video transcript.</h1>
-                    <p>Paste a YouTube link, process the transcript, and get instant insights from the video content.</p>
+                    <p className="eyebrow">Video Analysis</p>
+                    <h1>Turn a YouTube transcript into a searchable study surface.</h1>
+                    <p>Paste a video link, process the transcript, then ask for summaries, claims, moments, or explanations without losing the conversation trail.</p>
                 </div>
 
                 <div className="page-summary">
@@ -106,7 +105,7 @@ const YouTubeChat = () => {
                     <section className="card upload-card">
                         <div className="card-head">
                             <div>
-                                <p className="eyebrow">Video input</p>
+                                <p className="eyebrow">Input</p>
                                 <h2>Paste YouTube link</h2>
                             </div>
                             <span className="status-chip">Required</span>
@@ -125,37 +124,23 @@ const YouTubeChat = () => {
                             <span className="upload-meta">{videoInfo ? videoInfo.videoId : "No URL processed yet"}</span>
                             <button className="button primary-button" onClick={handleUpload} disabled={loading}>Process Video</button>
                         </div>
-
-                        <p className="upload-hint">Use any valid YouTube watch URL. Wait until processing completes before asking questions.</p>
                     </section>
 
                     <section className="card detail-card">
                         <div className="card-head">
                             <div>
-                                <p className="eyebrow">Video details</p>
-                                <h2>Current document</h2>
+                                <p className="eyebrow">Active source</p>
+                                <h2>Video profile</h2>
                             </div>
                             <span className="detail-status">{videoInfo ? "Loaded" : "Idle"}</span>
                         </div>
 
                         {videoInfo ? (
                             <div className="detail-grid">
-                                <div className="detail-row">
-                                    <span>Video title</span>
-                                    <strong>{videoInfo.title || videoInfo.videoId}</strong>
-                                </div>
-                                <div className="detail-row">
-                                    <span>Video ID</span>
-                                    <strong>{videoInfo.videoId}</strong>
-                                </div>
-                                <div className="detail-row">
-                                    <span>Chunks</span>
-                                    <strong>{videoInfo.totalChunks || "—"}</strong>
-                                </div>
-                                <div className="detail-row">
-                                    <span>Processing status</span>
-                                    <strong>{videoInfo.status}</strong>
-                                </div>
+                                <div className="detail-row"><span>Video title</span><strong>{videoInfo.title || videoInfo.videoId}</strong></div>
+                                <div className="detail-row"><span>Video ID</span><strong>{videoInfo.videoId}</strong></div>
+                                <div className="detail-row"><span>Chunks</span><strong>{videoInfo.totalChunks || "-"}</strong></div>
+                                <div className="detail-row"><span>Processing</span><strong>{videoInfo.status}</strong></div>
                             </div>
                         ) : (
                             <p className="empty-state">Submit a video URL to view details and start the chat experience.</p>
@@ -165,14 +150,14 @@ const YouTubeChat = () => {
                     <section className="card hint-card">
                         <div className="card-head">
                             <div>
-                                <p className="eyebrow">Quick tips</p>
-                                <h2>Ask better questions</h2>
+                                <p className="eyebrow">Question craft</p>
+                                <h2>Ask by moment</h2>
                             </div>
                         </div>
                         <ul className="hint-list">
                             <li>Ask for summaries, key moments, or explanations from the transcript.</li>
-                            <li>Try: “What are the main points in the first half?” or “Summarize the speaker’s recommendation.”</li>
-                            <li>Once the video is complete, the answer is based on the transcript context.</li>
+                            <li>Try "What are the main points in the first half?" or "Summarize the recommendation."</li>
+                            <li>Answers become available once transcript processing is complete.</li>
                         </ul>
                     </section>
                 </aside>
@@ -182,7 +167,7 @@ const YouTubeChat = () => {
                         <div className="card-head">
                             <div>
                                 <p className="eyebrow">Question</p>
-                                <h2>Ask the video</h2>
+                                <h2>Ask the transcript</h2>
                             </div>
                             <span className="status-chip">{videoInfo ? (videoInfo.status === "COMPLETED" ? "Ready" : "Processing") : "Waiting"}</span>
                         </div>
@@ -210,22 +195,14 @@ const YouTubeChat = () => {
                                 <p className="eyebrow">Latest answer</p>
                                 <h2>Response preview</h2>
                             </div>
-                            <span className="meta-text">
-                                {lastChat ? new Date(lastChat.timestamp).toLocaleString() : "Waiting for your first question"}
-                            </span>
+                            <span className="meta-text">{lastChat ? new Date(lastChat.timestamp).toLocaleString() : "Waiting for your first question"}</span>
                         </div>
 
                         <div className="answer-content">
                             {lastChat ? (
                                 <>
-                                    <div className="answer-block">
-                                        <p className="card-label">Question</p>
-                                        <p>{lastChat.question}</p>
-                                    </div>
-                                    <div className="answer-block">
-                                        <p className="card-label">Answer</p>
-                                        <p>{lastChat.answer}</p>
-                                    </div>
+                                    <div className="answer-block"><p className="card-label">Question</p><p>{lastChat.question}</p></div>
+                                    <div className="answer-block"><p className="card-label">Answer</p><p>{lastChat.answer}</p></div>
                                 </>
                             ) : (
                                 <p className="empty-state">You will see the latest question and answer here after asking the video.</p>
@@ -249,31 +226,22 @@ const YouTubeChat = () => {
             <section className="history-section">
                 <div className="history-header">
                     <div>
-                        <p className="eyebrow">History</p>
-                        <h2>Conversation timeline</h2>
+                        <p className="eyebrow">Timeline</p>
+                        <h2>Conversation trail</h2>
                     </div>
-                    <p>All video questions and answers are stored here. Use the timeline to revisit past chats and track analysis over time.</p>
+                    <p>All video questions and answers are stored here for repeat analysis and follow-up prompts.</p>
                 </div>
 
                 <div className="history-grid">
-                    {chatHistory.length === 0 && (
-                        <div className="history-empty">No history available yet. Ask a question to start the timeline.</div>
-                    )}
-
+                    {chatHistory.length === 0 && <div className="history-empty">No history available yet. Ask a question to start the timeline.</div>}
                     {chatHistory.map((item) => (
                         <article key={item._id || item.createdAt} className="history-entry">
                             <div className="history-entry-top">
                                 <span className="history-badge">Q&A</span>
                                 <time>{new Date(item.createdAt).toLocaleString()}</time>
                             </div>
-                            <div className="history-entry-block">
-                                <p className="history-entry-label">Question</p>
-                                <p>{item.question}</p>
-                            </div>
-                            <div className="history-entry-block">
-                                <p className="history-entry-label">Answer</p>
-                                <p>{item.answer}</p>
-                            </div>
+                            <div className="history-entry-block"><p className="history-entry-label">Question</p><p>{item.question}</p></div>
+                            <div className="history-entry-block"><p className="history-entry-label">Answer</p><p>{item.answer}</p></div>
                         </article>
                     ))}
                 </div>

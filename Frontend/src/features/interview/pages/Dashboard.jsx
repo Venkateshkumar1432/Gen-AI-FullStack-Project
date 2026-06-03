@@ -4,25 +4,31 @@ import "../style/dashboard.scss"
 
 const featureCards = [
     {
-        title: "Interview Preparation",
-        description: "Build a tailored interview strategy based on your resume, experience, and job description.",
-        buttonText: "Start Preparing",
+        title: "Role Fit Lab",
+        description: "Turn a job brief, resume, and profile notes into a precise interview strategy.",
+        buttonText: "Build plan",
         path: "/interview-prep",
-        icon: "🎯"
+        icon: "01",
+        meta: "Resume + JD",
+        accent: "coral"
     },
     {
-        title: "Document Chat",
-        description: "Upload a PDF and ask questions to get instant answers from the document content.",
-        buttonText: "Open Document Chat",
+        title: "Document Desk",
+        description: "Interrogate a PDF, surface page-backed answers, and keep a reusable timeline.",
+        buttonText: "Open desk",
         path: "/document-chat",
-        icon: "📄"
+        icon: "02",
+        meta: "PDF Q&A",
+        accent: "teal"
     },
     {
-        title: "YouTube Video Chat",
-        description: "Process a YouTube video and ask natural-language questions using its transcript.",
-        buttonText: "Open YouTube Chat",
+        title: "Transcript Studio",
+        description: "Process a video transcript and extract the ideas, claims, and moments that matter.",
+        buttonText: "Analyze video",
         path: "/youtube-chat",
-        icon: "🎬"
+        icon: "03",
+        meta: "Video RAG",
+        accent: "amber"
     }
 ]
 
@@ -30,28 +36,47 @@ const Dashboard = () => {
     const { user, handleLogout } = useAuth()
     const navigate = useNavigate()
 
-    const onFeatureClick = (path) => {
-        navigate(path)
-    }
-
     return (
         <div className="dashboard-page">
             <header className="dashboard-header">
-                <div>
-                    <p className="dashboard-welcome">Welcome back, <strong>{user?.username || user?.email || "User"}</strong></p>
-                    <h1>Choose your next step</h1>
-                    <p>Pick a feature to continue: build your interview prep plan, ask questions from a PDF, or chat with a YouTube video transcript.</p>
+                <div className="dashboard-hero">
+                    <p className="dashboard-welcome">Workspace online for <strong>{user?.username || user?.email || "User"}</strong></p>
+                    <h1>Pick an intelligence lane and start working.</h1>
+                    <p>One cockpit for interview prep, document research, and video transcript analysis. Each lane keeps the workflow focused and fast.</p>
                 </div>
-                <button onClick={handleLogout} className="button secondary-button">Logout</button>
+                <div className="dashboard-actions">
+                    <span className="dashboard-pulse">Ready</span>
+                    <button onClick={handleLogout} className="button secondary-button">Logout</button>
+                </div>
             </header>
+
+            <section className="dashboard-strip" aria-label="Workspace summary">
+                <div>
+                    <span>Modes</span>
+                    <strong>3</strong>
+                </div>
+                <div>
+                    <span>Flow</span>
+                    <strong>Upload, ask, refine</strong>
+                </div>
+                <div>
+                    <span>Output</span>
+                    <strong>Plans and answers</strong>
+                </div>
+            </section>
 
             <div className="dashboard-grid">
                 {featureCards.map((card) => (
-                    <article key={card.title} className="feature-card">
-                        <div className="feature-card__icon">{card.icon}</div>
-                        <h2>{card.title}</h2>
-                        <p>{card.description}</p>
-                        <button onClick={() => onFeatureClick(card.path)} className="button primary-button">{card.buttonText}</button>
+                    <article key={card.title} className={`feature-card feature-card--${card.accent}`}>
+                        <div className="feature-card__top">
+                            <span className="feature-card__icon">{card.icon}</span>
+                            <span className="feature-card__meta">{card.meta}</span>
+                        </div>
+                        <div className="feature-card__copy">
+                            <h2>{card.title}</h2>
+                            <p>{card.description}</p>
+                        </div>
+                        <button onClick={() => navigate(card.path)} className="button primary-button">{card.buttonText}</button>
                     </article>
                 ))}
             </div>
