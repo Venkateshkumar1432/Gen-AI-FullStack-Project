@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: interview-ai-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb+srv://venkatesh1432:c9M7p3VgCEQZaVu2@gen-ai-interview.yegax2m.mongodb.net/Inetrview_Master
+      - JWT_SECRET=12345
+      - GEMINI_API_KEY=AIzaSyBMQebIgxPzD6fvCyWqvK-sGw7cvLwDqRc
+      - FRONTEND_URL=http://localhost:5173
+      - EMBEDDING_MODEL=models/gemini-embedding-001
+    depends_on:
+      mongo:
+        condition: service_healthy
+    volumes:
+      - ./Backend/src:/app/src
+      - ./Backend/.env:/app/.env
+    restart: unless-stopped
+    networks:
+      - interview-ai-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: interview-ai-frontend
+    ports:
+      - "80:80"
+    environment:
+      - VITE_BACKEND_API=${VITE_BACKEND_API:-http://localhost:3000}
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - interview-ai-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  mongo:
+    image: mongo:7.0
+    container_name: interview-ai-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=venkatesh1432
+      - MONGO_INITDB_ROOT_PASSWORD=c9M7p3VgCEQZaVu2
+      - MONGO_INITDB_DATABASE=Inetrview_Master
+    volumes:
+      - mongo_data:/data/db
+      - mongo_config:/data/configdb
+    restart: unless-stopped
+    networks:
+      - interview-ai-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  interview-ai-network:
+    driver: bridge
+
+volumes:
+  mongo_data:
+  mongo_config:

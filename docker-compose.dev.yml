@@ -1,0 +1,75 @@
+# Development Docker Compose - with hot-reload and debug features
+# Usage: docker-compose -f docker-compose.dev.yml up
+
+services:
+  frontend:
+    image: node:20-alpine
+    container_name: interview-ai-frontend-dev
+    working_dir: /app
+    ports:
+      - "5173:5173"  # Vite dev server port
+    environment:
+      - VITE_BACKEND_API=http://localhost:3000
+    volumes:
+      - ./Frontend:/app
+      - frontend_node_modules:/app/node_modules
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    networks:
+      - interview-ai-network
+    depends_on:
+      - backend
+
+  backend:
+    image: node:20-alpine
+    container_name: interview-ai-backend-dev
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb+srv://venkatesh1432:c9M7p3VgCEQZaVu2@gen-ai-interview.yegax2m.mongodb.net/Inetrview_Master
+      - JWT_SECRET=12345
+      - GEMINI_API_KEY=AIzaSyBMQebIgxPzD6fvCyWqvK-sGw7cvLwDqRc
+      - FRONTEND_URL=http://localhost:5173
+      - EMBEDDING_MODEL=models/gemini-embedding-001
+    volumes:
+      - ./Backend:/app
+      - backend_node_modules:/app/node_modules
+    command: sh -c "npm install && npm run dev"
+    networks:
+      - interview-ai-network
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:7.0
+    container_name: interview-ai-mongo-dev
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=venkatesh1432
+      - MONGO_INITDB_ROOT_PASSWORD=c9M7p3VgCEQZaVu2
+      - MONGO_INITDB_DATABASE=Inetrview_Master
+    volumes:
+      - mongo_data_dev:/data/db
+      - mongo_config_dev:/data/configdb
+    networks:
+      - interview-ai-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+networks:
+  interview-ai-network:
+    driver: bridge
+
+volumes:
+  mongo_data_dev:
+  mongo_config_dev:
+  frontend_node_modules:
+  backend_node_modules:
