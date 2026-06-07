@@ -1,0 +1,23 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: genai-prod-cluster
+  region: ap-south-1
+
+vpc:
+  cidr: 10.0.0.0/16
+
+managedNodeGroups:
+  - name: prod-workers
+    instanceType: t3.large
+    desiredCapacity: 2
+    minSize: 2
+    maxSize: 5
+
+    privateNetworking: true
+
+    volumeSize: 30
+
+    labels:
+      role: worker
