@@ -4,43 +4,37 @@ pipeline {
 agent any
 
 environment {
+
     AWS_REGION = 'ap-south-1'
 
-    FRONTEND_REPO = 'frontend'
-    BACKEND_REPO = 'backend'
+    ECR_REGISTRY = '443915510355.dkr.ecr.ap-south-1.amazonaws.com'
 
-    ECR_REGISTRY = 'ACCOUNT_ID.dkr.ecr.ap-south-1.amazonaws.com'
+    FRONTEND_REPO = 'frontend'
+    BACKEND_REPO  = 'backend'
+
+    BASTION_HOST = 'YOUR_BASTION_PUBLIC_IP'
+    BASTION_USER = 'ubuntu'
 }
 
 stages {
 
     stage('Checkout') {
+
         steps {
             checkout scm
         }
     }
 
-  stage('Detect Changes') {
-    steps {
-        script {
+    stage('Detect Changes') {
 
-            def previousCommit = env.GIT_PREVIOUS_SUCCESSFUL_COMMIT
-            def currentCommit = env.GIT_COMMIT
+        steps {
 
-            if (!previousCommit) {
-                echo "First build detected. Building everything."
-
-                env.FRONTEND_CHANGED = 'true'
-                env.BACKEND_CHANGED = 'true'
-
-            } else {
+            script {
 
                 def changedFiles = sh(
-                    script: """
-                        git diff --name-only \
-                        ${previousCommit} \
-                        ${currentCommit}
-                    """,
+                    script: '''
+                    git diff --name-only HEAD~1 HEAD
+                    ''',
                     returnStdout: true
                 ).trim()
 
@@ -48,138 +42,187 @@ stages {
                 echo changedFiles
 
                 env.FRONTEND_CHANGED =
-                    changedFiles.contains('frontend/')
-                        ? 'true'
-                        : 'false'
+                    changedFiles.readLines().any {
+                        it.startsWith("frontend/")
+                    } ? "true" : "false"
 
                 env.BACKEND_CHANGED =
-                    changedFiles.contains('backend/')
-                        ? 'true'
-                        : 'false'
-            }
+                    changedFiles.readLines().any {
+                        it.startsWith("backend/")
+                    } ? "true" : "false"
 
-            echo "Frontend Changed: ${env.FRONTEND_CHANGED}"
-            echo "Backend Changed: ${env.BACKEND_CHANGED}"
+                env.K8S_CHANGED =
+                    changedFiles.readLines().any {
+                        it.startsWith("k8s/")
+                    } ? "true" : "false"
+
+                env.CHANGED_K8S_FILES =
+                    changedFiles.readLines()
+                        .findAll { it.startsWith("k8s/") }
+                        .join(",")
+
+                echo "Frontend Changed : ${env.FRONTEND_CHANGED}"
+                echo "Backend Changed  : ${env.BACKEND_CHANGED}"
+                echo "K8S Changed      : ${env.K8S_CHANGED}"
+            }
         }
     }
-}
 
     stage('Build Frontend') {
+
         when {
-            expression { env.FRONTEND_CHANGED == 'true' }
+            expression {
+                env.FRONTEND_CHANGED == "true"
+            }
         }
 
         steps {
+
             sh """
-                docker build \
-                -t ${FRONTEND_REPO}:latest \
-                ./frontend
+            docker build \
+            -t ${ECR_REGISTRY}/${FRONTEND_REPO}:${BUILD_NUMBER} \
+            ./frontend
             """
         }
     }
 
     stage('Build Backend') {
+
         when {
-            expression { env.BACKEND_CHANGED == 'true' }
+            expression {
+                env.BACKEND_CHANGED == "true"
+            }
         }
 
         steps {
+
             sh """
-                docker build \
-                -t ${BACKEND_REPO}:latest \
-                ./backend
+            docker build \
+            -t ${ECR_REGISTRY}/${BACKEND_REPO}:${BUILD_NUMBER} \
+            ./backend
             """
         }
     }
 
     stage('Login To ECR') {
+
         when {
-            expression {
-                env.FRONTEND_CHANGED == 'true' ||
-                env.BACKEND_CHANGED == 'true'
+
+            anyOf {
+                expression { env.FRONTEND_CHANGED == "true" }
+                expression { env.BACKEND_CHANGED == "true" }
             }
         }
 
         steps {
+
             sh """
             aws ecr get-login-password \
             --region ${AWS_REGION} | \
             docker login \
             --username AWS \
-            --password-stdin \
-            ${ECR_REGISTRY}
+            --password-stdin ${ECR_REGISTRY}
             """
         }
     }
 
-    stage('Push Frontend') {
-        when {
-            expression { env.FRONTEND_CHANGED == 'true' }
-        }
+    stage('Push Images') {
 
         steps {
-            sh """
-            docker tag \
-            ${FRONTEND_REPO}:latest \
-            ${ECR_REGISTRY}/${FRONTEND_REPO}:latest
 
-            docker push \
-            ${ECR_REGISTRY}/${FRONTEND_REPO}:latest
-            """
+            script {
+
+                if (env.FRONTEND_CHANGED == "true") {
+
+                    sh """
+                    docker push \
+                    ${ECR_REGISTRY}/${FRONTEND_REPO}:${BUILD_NUMBER}
+                    """
+                }
+
+                if (env.BACKEND_CHANGED == "true") {
+
+                    sh """
+                    docker push \
+                    ${ECR_REGISTRY}/${BACKEND_REPO}:${BUILD_NUMBER}
+                    """
+                }
+            }
         }
     }
 
-    stage('Push Backend') {
+    stage('Deploy To EKS') {
+
         when {
-            expression { env.BACKEND_CHANGED == 'true' }
+
+            anyOf {
+                expression { env.FRONTEND_CHANGED == "true" }
+                expression { env.BACKEND_CHANGED == "true" }
+            }
         }
 
         steps {
-            sh """
-            docker tag \
-            ${BACKEND_REPO}:latest \
-            ${ECR_REGISTRY}/${BACKEND_REPO}:latest
 
-            docker push \
-            ${ECR_REGISTRY}/${BACKEND_REPO}:latest
-            """
-        }
-    }
+            sshagent(['bastion-ssh-key']) {
 
-    stage('Deploy Frontend') {
-        when {
-            expression { env.FRONTEND_CHANGED == 'true' }
-        }
+                script {
 
-        steps {
-            sh """
-            kubectl set image deployment/frontend \
-            frontend=${ECR_REGISTRY}/${FRONTEND_REPO}:latest \
-            -n production
+                    def commands = ""
 
-            kubectl rollout status deployment/frontend \
-            -n production
-            """
-        }
-    }
+                    if (env.FRONTEND_CHANGED == "true") {
 
-    stage('Deploy Backend') {
-        when {
-            expression { env.BACKEND_CHANGED == 'true' }
-        }
+                        commands += """
+                        echo "Deploying Frontend"
 
-        steps {
-            sh """
-            kubectl set image deployment/backend \
-            backend=${ECR_REGISTRY}/${BACKEND_REPO}:latest \
-            -n production
+                        kubectl set image deployment/frontend \
+                        frontend=${ECR_REGISTRY}/${FRONTEND_REPO}:${BUILD_NUMBER} \
+                        -n production
 
-            kubectl rollout status deployment/backend \
-            -n production
-            """
+                        kubectl rollout status \
+                        deployment/frontend \
+                        -n production
+                        """
+                    }
+
+                    if (env.BACKEND_CHANGED == "true") {
+
+                        commands += """
+                        echo "Deploying Backend"
+
+                        kubectl set image deployment/backend \
+                        backend=${ECR_REGISTRY}/${BACKEND_REPO}:${BUILD_NUMBER} \
+                        -n production
+
+                        kubectl rollout status \
+                        deployment/backend \
+                        -n production
+                        """
+                    }
+
+                    sh """
+                    ssh \
+                    -o StrictHostKeyChecking=no \
+                    ${BASTION_USER}@${BASTION_HOST} '
+                    ${commands}
+                    '
+                    """
+                }
+            }
         }
     }
 }
 
+post {
+
+    success {
+
+        echo "Deployment Completed Successfully"
+    }
+
+    failure {
+
+        echo "Deployment Failed"
+    }
+}
 
 }
