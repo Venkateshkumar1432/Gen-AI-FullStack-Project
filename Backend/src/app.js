@@ -8,7 +8,8 @@ app.use(express.json())
 app.use(cookieParser())
 const allowedOrigins = [
     "http://localhost:5173",
-    "https://gen-ai-fullstack-project.onrender.com"
+    "https://gen-ai-fullstack-project.onrender.com",
+    "https://ai-project.venkateshkumar.cloud"
 ];
 app.use(cors({
     origin: allowedOrigins,
