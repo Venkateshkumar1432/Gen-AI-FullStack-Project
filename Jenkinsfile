@@ -12,7 +12,7 @@ environment {
     FRONTEND_REPO = 'frontend'
     BACKEND_REPO  = 'backend'
 
-    BASTION_HOST = 'YOUR_BASTION_PUBLIC_IP'
+    BASTION_HOST = '35.154.199.206'
     BASTION_USER = 'ubuntu'
 }
 
@@ -80,7 +80,7 @@ stages {
 
             sh """
             docker build \
-            -t ${ECR_REGISTRY}/${FRONTEND_REPO}:${BUILD_NUMBER} \
+            -t ${ECR_REGISTRY}/${FRONTEND_REPO}:latest \
             ./frontend
             """
         }
@@ -98,7 +98,7 @@ stages {
 
             sh """
             docker build \
-            -t ${ECR_REGISTRY}/${BACKEND_REPO}:${BUILD_NUMBER} \
+            -t ${ECR_REGISTRY}/${BACKEND_REPO}:latest \
             ./backend
             """
         }
@@ -136,7 +136,7 @@ stages {
 
                     sh """
                     docker push \
-                    ${ECR_REGISTRY}/${FRONTEND_REPO}:${BUILD_NUMBER}
+                    ${ECR_REGISTRY}/${FRONTEND_REPO}:latest
                     """
                 }
 
@@ -144,7 +144,7 @@ stages {
 
                     sh """
                     docker push \
-                    ${ECR_REGISTRY}/${BACKEND_REPO}:${BUILD_NUMBER}
+                    ${ECR_REGISTRY}/${BACKEND_REPO}:latest
                     """
                 }
             }
@@ -175,7 +175,7 @@ stages {
                         echo "Deploying Frontend"
 
                         kubectl set image deployment/frontend \
-                        frontend=${ECR_REGISTRY}/${FRONTEND_REPO}:${BUILD_NUMBER} \
+                        frontend=${ECR_REGISTRY}/${FRONTEND_REPO}:latest \
                         -n production
 
                         kubectl rollout status \
@@ -190,7 +190,7 @@ stages {
                         echo "Deploying Backend"
 
                         kubectl set image deployment/backend \
-                        backend=${ECR_REGISTRY}/${BACKEND_REPO}:${BUILD_NUMBER} \
+                        backend=${ECR_REGISTRY}/${BACKEND_REPO}:latest \
                         -n production
 
                         kubectl rollout status \

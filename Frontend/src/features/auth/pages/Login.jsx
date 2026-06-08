@@ -30,7 +30,10 @@ const Login = () => {
                 <div className="form-heading">
                     <span className="brand-pill">GenAI Full Stack Project</span>
                     <h1>Welcome Back</h1>
-                    <p>Login to continue exploring your PDF chat assistant, saved sessions, and document insights.</p>
+                    <p>
+                        Sign in to continue exploring AI-powered document analysis, YouTube video conversations,
+                        interview preparation, and personalized knowledge assistance.
+                    </p>
                 </div>
                 <form onSubmit={handleSubmit}>
                     <div className="input-group">

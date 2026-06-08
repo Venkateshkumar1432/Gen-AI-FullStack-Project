@@ -30,7 +30,10 @@ const Register = () => {
                 <div className="form-heading">
                     <span className="brand-pill">GenAI Full Stack Project</span>
                     <h1>Create account</h1>
-                    <p>Register to start asking questions about your documents and save every chat session.</p>
+                    <p>
+                        Join today and transform documents, videos, and interview preparation
+                        into interactive AI-powered conversations.
+                    </p>
                 </div>
 
                 <form onSubmit={handleSubmit}>
