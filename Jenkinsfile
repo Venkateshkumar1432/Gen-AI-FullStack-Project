@@ -43,12 +43,12 @@ stages {
 
                 env.FRONTEND_CHANGED =
                     changedFiles.readLines().any {
-                        it.startsWith("frontend/")
+                        it.startsWith("Frontend/")
                     } ? "true" : "false"
 
                 env.BACKEND_CHANGED =
                     changedFiles.readLines().any {
-                        it.startsWith("backend/")
+                        it.startsWith("Backend/")
                     } ? "true" : "false"
 
                 env.K8S_CHANGED =
@@ -81,7 +81,7 @@ stages {
             sh """
             docker build \
             -t ${ECR_REGISTRY}/${FRONTEND_REPO}:latest \
-            ./frontend
+            ./Frontend
             """
         }
     }
@@ -99,7 +99,7 @@ stages {
             sh """
             docker build \
             -t ${ECR_REGISTRY}/${BACKEND_REPO}:latest \
-            ./backend
+            ./Backend
             """
         }
     }
