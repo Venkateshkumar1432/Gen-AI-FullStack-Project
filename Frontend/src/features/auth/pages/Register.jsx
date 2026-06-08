@@ -31,7 +31,7 @@ const Register = () => {
                     <span className="brand-pill">GenAI Full Stack Project</span>
                     <h1>Create account</h1>
                     <p>
-                        Join today and transform documents, videos, and interview preparation
+                        Signup, Join today and transform documents, videos, and interview preparation
                         into interactive AI-powered conversations.
                     </p>
                 </div>

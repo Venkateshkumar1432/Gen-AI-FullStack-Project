@@ -25,7 +25,7 @@ app.use("/api/interview", interviewRouter)
 app.use("/api/youtube", youTubeRouter)
 app.use("/api/pdf", pdfRouter)
 app.use("/health", (req, res) => {
-    res.status(200).json({ message: "Server is running successfull" })
+    res.status(200).json({ message: "Server is running!!!" })
 })
 app.use(errorHandler)
 

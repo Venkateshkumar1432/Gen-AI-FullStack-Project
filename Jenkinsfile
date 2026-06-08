@@ -178,7 +178,7 @@ stages {
                         frontend=${ECR_REGISTRY}/${FRONTEND_REPO}:latest \
                         -n production
 
-                        kubectl rollout status \
+                        kubectl rollout restart \
                         deployment/frontend \
                         -n production
                         """
@@ -193,7 +193,7 @@ stages {
                         backend=${ECR_REGISTRY}/${BACKEND_REPO}:latest \
                         -n production
 
-                        kubectl rollout status \
+                        kubectl rollout restart \
                         deployment/backend \
                         -n production
                         """

@@ -31,7 +31,7 @@ const Login = () => {
                     <span className="brand-pill">GenAI Full Stack Project</span>
                     <h1>Welcome Back</h1>
                     <p>
-                        Sign in for continue exploring AI-powered document analysis, YouTube video conversations,
+                        Login in for continue exploring AI-powered document analysis, YouTube video conversations,
                         interview preparation, and personalized knowledge assistance.
                     </p>
                 </div>
