@@ -1,9 +1,4 @@
-import axios from "axios";
-const API_BASE_URL = import.meta.env.VITE_BACKEND_API
-const api = axios.create({
-    baseURL: API_BASE_URL,
-    withCredentials: true,
-})
+import api from "../../../services/apiClient"
 
 
 /**

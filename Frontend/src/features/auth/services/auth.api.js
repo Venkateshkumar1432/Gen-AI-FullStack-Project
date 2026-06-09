@@ -1,10 +1,4 @@
-import axios from "axios"
-const API_BASE_URL = import.meta.env.VITE_BACKEND_API
-
-const api = axios.create({
-    baseURL: API_BASE_URL,
-    withCredentials: true
-})
+import api, { storeAuthToken, clearAuthToken } from "../../../services/apiClient"
 
 export async function register({ username, email, password }) {
 
@@ -12,6 +6,9 @@ export async function register({ username, email, password }) {
         const response = await api.post('/api/auth/register', {
             username, email, password
         })
+
+        const token = response.data?.user?.token || response.data?.token
+        if (token) storeAuthToken(token)
 
         return response.data
 
@@ -31,6 +28,9 @@ export async function login({ email, password }) {
             email, password
         })
 
+        const token = response.data?.user?.token || response.data?.token
+        if (token) storeAuthToken(token)
+
         return response.data
 
     } catch (err) {
@@ -42,6 +42,7 @@ export async function logout() {
     try {
 
         const response = await api.get("/api/auth/logout")
+        clearAuthToken()
 
         return response.data
 
